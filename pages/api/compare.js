@@ -1,6 +1,6 @@
 import formidable from 'formidable';
 import * as XLSX from 'xlsx';
-import fs from 'fs';
+import fs from 'fs/promises'; // Use promises for async cleanup
 
 export const config = {
   api: {
@@ -9,9 +9,11 @@ export const config = {
 };
 
 export default async function handler(req, res) {
-  const form = formidable({ multiples: true, uploadDir: './.tmp', keepExtensions: true });
+  const form = formidable({ multiples: true, uploadDir: '/tmp', keepExtensions: true });
 
   form.parse(req, async (err, fields, files) => {
+    const tempFiles = []; // Track files for cleanup
+
     try {
       if (err) throw err;
 
@@ -21,6 +23,8 @@ export default async function handler(req, res) {
       if (!file1 || !file2) {
         return res.status(400).json({ error: 'Both files required' });
       }
+
+      tempFiles.push(file1.filepath, file2.filepath); // Save for later cleanup
 
       const wb1 = XLSX.readFile(file1.filepath);
       const wb2 = XLSX.readFile(file2.filepath);
@@ -101,7 +105,7 @@ export default async function handler(req, res) {
       // Sheet5: OFF & L swap
       const sheet5Data = [['Day', 'Sheet1=OFF & Sheet2=L (Emp Codes)', 'Count', 'Sheet1=L & Sheet2=OFF (Emp Codes)', 'Count']];
       for (let col = 2; col < maxCols; col++) {
-        const day = headersRow[col] ? `Day ${col - 1}` : `Day ${col - 1}`;
+        const day = headersRow[col] || `Day ${col - 1}`;
         const offAndL = [];
         const lAndOff = [];
 
@@ -123,7 +127,7 @@ export default async function handler(req, res) {
       // Sheet6: FH & L
       const sheet6Data = [['Day', 'Sheet1 = FH & Sheet2 = L (Emp Codes)', 'Count']];
       for (let col = 2; col < maxCols; col++) {
-        const day = headersRow[col] ? `Day ${col - 1}` : `Day ${col - 1}`;
+        const day = headersRow[col] || `Day ${col - 1}`;
         const fhAndL = [];
 
         for (const empCode of allEmpCodes) {
@@ -140,20 +144,25 @@ export default async function handler(req, res) {
 
       XLSX.utils.book_append_sheet(resultWb, XLSX.utils.aoa_to_sheet(sheet6Data), 'Sheet6_FH_L_Summary');
 
-      // ✅ Prepare buffer and send file to frontend
+      // Send result buffer
       const buffer = XLSX.write(resultWb, { type: 'buffer', bookType: 'xlsx' });
 
-      /*res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-      res.setHeader('Content-Disposition', 'attachment; filename=comparison_result.xlsx');*/
-
-      // Timestamped filename
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
       const filename = `comparison_result_${timestamp}.xlsx`;
 
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
       res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-      
+
       res.send(buffer);
+
+      // 🔥 Cleanup after sending response
+      for (const filePath of tempFiles) {
+        try {
+          await fs.unlink(filePath);
+        } catch (e) {
+          console.warn(`Failed to delete temp file ${filePath}:`, e.message);
+        }
+      }
 
     } catch (error) {
       console.error('❌ Comparison error:', error);
