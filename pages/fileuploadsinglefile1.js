@@ -59,7 +59,7 @@ export default function Home() {
 
   return (
     <div>
-      <TopBar title="Single File Excel Compare" showBack={true} />
+      <TopBar title="EDGAR and XBRL Team - Single File Excel Compare" showBack={true} />
       <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-4">
         <div className="bg-white shadow-xl rounded-2xl p-8 w-full max-w-md">
           <h1 className="text-2xl font-bold text-center mb-6">Upload a Single Excel File</h1>
