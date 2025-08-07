@@ -1,7 +1,8 @@
+// pages/fileuploadsinglefile1.js
 import { useState } from 'react';
-import TopBar from '../components/TopBar.js';
+import TopBar from '../components/TopBar';
 
-export default function Home() {
+export default function FileUploadSingleFile1() {
   const [file, setFile] = useState(null);
   const [status, setStatus] = useState('');
   const [uploading, setUploading] = useState(false);
@@ -30,8 +31,8 @@ export default function Home() {
       });
 
       if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || 'Server Error');
+        const errorData = await res.text();
+        throw new Error(`Server error: ${res.status} - ${errorData}`);
       }
 
       const blob = await res.blob();
@@ -51,7 +52,7 @@ export default function Home() {
       setStatus('✅ Comparison complete. File downloaded.');
     } catch (err) {
       console.error(err);
-      setStatus(`❌ Error: ${err.message}`);
+      setStatus(`❌ Upload failed: ${err.message}`);
     } finally {
       setUploading(false);
     }
@@ -66,30 +67,20 @@ export default function Home() {
 
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
-              <label className="block font-medium text-gray-700 mb-1">Excel File</label>
-              <input
-                type="file"
-                accept=".xlsx,.xls"
-                onChange={handleFileChange}
-                className="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
-              />
-              {file && <div className="text-sm mt-1 text-gray-600">📁 {file.name}</div>}
+              <input type="file" accept=".xlsx" onChange={handleFileChange} />
+              {file && <p className="text-sm mt-2">📁 {file.name}</p>}
             </div>
 
             <button
               type="submit"
               disabled={uploading}
-              className="w-full bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-purple-700 transition"
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
             >
               {uploading ? 'Uploading...' : 'Upload & Compare'}
             </button>
           </form>
 
-          {status && (
-            <div className="mt-4 text-center text-sm text-gray-800">
-              {status}
-            </div>
-          )}
+          {status && <p className="mt-4 text-center">{status}</p>}
         </div>
       </div>
     </div>
