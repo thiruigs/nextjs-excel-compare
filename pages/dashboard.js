@@ -48,14 +48,22 @@ export default function Dashboard() {
 
       <div className="mt-6">
         <a href="/fileuploadsinglefile1" className="text-blue-600 underline">
-          EDGAR and XBRL Team Excel Compare
-        </a>
+          EDGAR and XBRL Team Excel Compare 
+        </a> [Single file upload]
       </div>
 
       <div className="mt-6">
         <a href="/fileuploadsinglefile2" className="text-blue-600 underline">
-          Other Team Excel Compare
-        </a>
+          Other Team Excel Compare 
+        </a> [Single file upload]
+      </div>
+
+      <div className="mt-6">-------------------------------------------</div>
+
+      <div className="mt-6">
+        <a href="/fileuploadoff" className="text-blue-600 underline">
+          OFF Extraction 
+        </a> [Single file upload]
       </div>
 
     </div>
