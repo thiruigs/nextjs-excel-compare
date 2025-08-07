@@ -1,8 +1,7 @@
-// pages/fileuploadsinglefile1.js
 import { useState } from 'react';
-import TopBar from '../components/TopBar';
+import TopBar from '../components/TopBar.js';
 
-export default function FileUploadSingleFile1() {
+export default function Home() {
   const [file, setFile] = useState(null);
   const [status, setStatus] = useState('');
   const [uploading, setUploading] = useState(false);
@@ -31,8 +30,8 @@ export default function FileUploadSingleFile1() {
       });
 
       if (!res.ok) {
-        const errorData = await res.text();
-        throw new Error(`Server error: ${res.status} - ${errorData}`);
+        const err = await res.json();
+        throw new Error(err.error || 'Server Error');
       }
 
       const blob = await res.blob();
@@ -52,7 +51,7 @@ export default function FileUploadSingleFile1() {
       setStatus('✅ Comparison complete. File downloaded.');
     } catch (err) {
       console.error(err);
-      setStatus(`❌ Upload failed: ${err.message}`);
+      setStatus(`❌ Error: ${err.message}`);
     } finally {
       setUploading(false);
     }
@@ -67,20 +66,30 @@ export default function FileUploadSingleFile1() {
 
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
-              <input type="file" accept=".xlsx" onChange={handleFileChange} />
-              {file && <p className="text-sm mt-2">📁 {file.name}</p>}
+              <label className="block font-medium text-gray-700 mb-1">Excel File</label>
+              <input
+                type="file"
+                accept=".xlsx,.xls"
+                onChange={handleFileChange}
+                className="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
+              />
+              {file && <div className="text-sm mt-1 text-gray-600">📁 {file.name}</div>}
             </div>
 
             <button
               type="submit"
               disabled={uploading}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              className="w-full bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-purple-700 transition"
             >
               {uploading ? 'Uploading...' : 'Upload & Compare'}
             </button>
           </form>
 
-          {status && <p className="mt-4 text-center">{status}</p>}
+          {status && (
+            <div className="mt-4 text-center text-sm text-gray-800">
+              {status}
+            </div>
+          )}
         </div>
       </div>
     </div>
